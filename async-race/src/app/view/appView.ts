@@ -241,6 +241,16 @@ class AppView {
     return Array.prototype.map.call(this.cars.querySelectorAll('.cars__item'), (el) => +el.dataset.id) as number[];
   }
 
+  showWin(name: string, time: number) {
+    this.winCarMessage.innerText = name + time;
+    AppView.showEl(this.winCarMessage);
+  }
+
+  hideWin() {
+    this.winCarMessage.innerText = '';
+    AppView.hideEl(this.winCarMessage);
+  }
+
   static getCarId(el: HTMLElement) {
     const carItem: HTMLElement | null = el.closest('.cars__item');
     if (carItem) {

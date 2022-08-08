@@ -47,8 +47,18 @@ class AppPresenter {
       this.view.resetCar(data.id);
     });
 
+    this.model.subscribe('raceEnd', (data: {id: number, data: { velocity: number; distance: number; }, time: number}) => {
+      this.model.getCarById(data.id).then((car: Car) => {
+        this.view.showWin(car.name, data.time);
+      });
+    });
+
     this.view.garageBtn.addEventListener('click', () => {
       this.openGarage();
+    });
+
+    this.view.winnersBtn.addEventListener('click', () => {
+      this.openWinners();
     });
 
     this.view.createCarBtn.addEventListener('click', () => {
@@ -94,6 +104,17 @@ class AppPresenter {
 
     this.view.pageNextBtn.addEventListener('click', () => {
       this.model.setGaragePage(this.model.state.garagePage + 1);
+    });
+
+    this.view.raceBtn.addEventListener('click', () => {
+      const ids: number[] = this.view.getCarsId();
+      this.model.startRace(ids);
+    });
+
+    this.view.resetBtn.addEventListener('click', () => {
+      this.view.hideWin();
+      const ids: number[] = this.view.getCarsId();
+      ids.forEach((id) => this.model.stopEngine(id));
     });
 
     this.model.setGaragePage(1);

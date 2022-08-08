@@ -40,3 +40,19 @@ html {
     filter: drop-shadow(1px 1px 4px #ffffff);
     -webkit-filter: drop-shadow(1px 1px 4px #ffffff);
 }
+
+.win-message{
+    position: fixed;
+    z-index: 100;
+    left: 0;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    width: 500px;
+    height: 50px;
+    font-size: 40px;
+    text-align: center;
+    color: #fff;
+    text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;
+}

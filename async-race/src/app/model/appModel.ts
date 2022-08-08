@@ -1,4 +1,4 @@
-import { State } from '../types';
+import { Car, State } from '../types';
 import EngineModel from './engine';
 import GarageModel from './garage';
 import WinnersModel from './winners';
@@ -107,6 +107,10 @@ class AppModel {
       .then((data) => this.broadcast('garage', data));
   }
 
+  getCarById(id: number): Promise<Car> {
+    return this.garage.getCar(id).then((response) => response.json());
+  }
+
   createCar(name: string, color: string) {
     this.garage.createCar(name, color).then((response) => response.json())
       .then((data) => {
@@ -194,6 +198,12 @@ class AppModel {
     this.engine.engine(id, 'stopped')
       .then((response) => response.json())
       .then((data) => this.broadcast('stopEngine', { id, data }));
+  }
+
+  startRace(ids: number[]) {
+    let time: number = performance.now();
+    const promises = ids.map((id) => this.startEngine(id));
+    Promise.any(promises).then((data) => { time = performance.now() - time; this.broadcast('raceEnd', Object.assign(data as object, { time })); });
   }
 }
 
