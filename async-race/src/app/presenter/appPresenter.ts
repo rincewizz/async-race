@@ -1,5 +1,5 @@
 import AppModel from '../model/appModel';
-import { Car } from '../types';
+import { Car, Winner } from '../types';
 import AppView from '../view/appView';
 
 class AppPresenter {
@@ -15,6 +15,9 @@ class AppPresenter {
   init() {
     this.model.subscribe('garage', (data: Car[]) => {
       this.view.renderGarage(data);
+    });
+    this.model.subscribe('winners', (data: (Winner & Car)[]) => {
+      this.view.renderWinners(data);
     });
 
     this.model.subscribe('createCar', (data: Car) => {
@@ -33,8 +36,16 @@ class AppPresenter {
       this.view.updateCount(count);
     });
 
+    this.model.subscribe('updateWinnersCount', (count: number) => {
+      this.view.updateWinnersCount(count);
+    });
+
     this.model.subscribe('updateGaragePage', (page: number) => {
       this.view.updateGaragePage(page);
+    });
+
+    this.model.subscribe('updateWinnersPage', (page: number) => {
+      this.view.updateWinnersPage(page);
     });
 
     this.model.subscribe('startEngine', (data: {id: number, data: { velocity: number; distance: number; }}) => {
@@ -46,10 +57,14 @@ class AppPresenter {
     this.model.subscribe('stopEngine', (data: {id: number, data: { velocity: number; distance: number; }}) => {
       this.view.resetCar(data.id);
     });
+    this.model.subscribe('updateWinners', () => {
+      this.model.setWinnersPage(this.model.state.winnersPage);
+    });
 
     this.model.subscribe('raceEnd', (data: {id: number, data: { velocity: number; distance: number; }, time: number}) => {
       this.model.getCarById(data.id).then((car: Car) => {
         this.view.showWin(car.name, data.time);
+        this.model.addWinner(car.id, data.time);
       });
     });
 
@@ -117,7 +132,18 @@ class AppPresenter {
       ids.forEach((id) => this.model.stopEngine(id));
     });
 
+    this.view.winnersPaginations.addEventListener('click', (e) => {
+      const target: HTMLElement = e.target as HTMLElement;
+      if (target.classList.contains('page-prev-btn')) {
+        this.model.setWinnersPage(this.model.state.winnersPage - 1);
+      }
+      if (target.classList.contains('page-next-btn')) {
+        this.model.setWinnersPage(this.model.state.winnersPage + 1);
+      }
+    });
+
     this.model.setGaragePage(1);
+    this.model.setWinnersPage(1);
   }
 
   openGarage() {

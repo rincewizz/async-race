@@ -1,4 +1,4 @@
-import { Car } from '../types';
+import { Car, Winner } from '../types';
 
 class AppView {
   garageBtn: HTMLButtonElement;
@@ -151,6 +151,15 @@ class AppView {
     });
   }
 
+  renderWinners(winners: Array<Winner & Car>) {
+    while (this.winnersTbody.firstChild) {
+      this.winnersTbody.removeChild(this.winnersTbody.firstChild);
+    }
+    winners.forEach((item) => {
+      this.renderWinner(item);
+    });
+  }
+
   renderCar(car: Car) {
     this.cars.insertAdjacentHTML(
       'beforeend',
@@ -166,6 +175,18 @@ class AppView {
         </div>
       </div>`,
     );
+  }
+
+  renderWinner(winner: Winner & Car) {
+    this.winnersTbody.insertAdjacentHTML('beforeend', `
+    <tr>
+      <td>${winner.id}</td>
+      <td>${winner.color}</td>
+      <td>${winner.name}</td>
+      <td>${winner.wins}</td>
+      <td>${winner.time}</td>
+    </tr>
+    `);
   }
 
   removeCar(id: number) {
@@ -196,8 +217,16 @@ class AppView {
     this.carsCount.innerText = String(count);
   }
 
+  updateWinnersCount(count: number) {
+    this.winnersCount.innerText = String(count);
+  }
+
   updateGaragePage(page: number) {
     this.garagePageNumber.innerText = String(page);
+  }
+
+  updateWinnersPage(page: number) {
+    this.winnersPageNumber.innerText = String(page);
   }
 
   startCar(carId: number, { velocity, distance }: { velocity: number, distance: number }) {

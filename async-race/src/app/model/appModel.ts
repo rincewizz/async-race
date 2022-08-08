@@ -1,4 +1,4 @@
-import { Car, State } from '../types';
+import { Car, State, Winner } from '../types';
 import EngineModel from './engine';
 import GarageModel from './garage';
 import WinnersModel from './winners';
@@ -204,6 +204,48 @@ class AppModel {
     let time: number = performance.now();
     const promises = ids.map((id) => this.startEngine(id));
     Promise.any(promises).then((data) => { time = performance.now() - time; this.broadcast('raceEnd', Object.assign(data as object, { time })); });
+  }
+
+  setWinnersCount(count: number) {
+    this.state.winnersCount = count || 0;
+    this.broadcast('updateWinnersCount', this.state.winnersCount);
+  }
+
+  getFullWinner(id: number) {
+    return this.winners.getWinner(id)
+      .then((response) => response.json())
+      .then((data) => this.getCarById(id).then((val) => Object.assign(data, val)));
+  }
+
+  setWinnersPage(page: number = 1) {
+    if (page < 1 || (this.state.winnersPage !== 0
+      && page > Math.ceil(this.state.winnersCount / 10))) return;
+    this.state.winnersPage = page;
+    this.broadcast('updateWinnersPage', this.state.winnersPage);
+
+    this.winners.getWinners(page, 10)
+      .then((response) => {
+        const count: number = Number(response.headers.get('x-total-count'));
+        this.setWinnersCount(count);
+        return response.json();
+      })
+      .then((data: Winner[]) => Promise.all(
+        data.map((el) => this.getCarById(el.id).then((val) => Object.assign(el, val))),
+      ))
+      .then((data) => this.broadcast('winners', data));
+  }
+
+  addWinner(id: number, time: number) {
+    this.winners.getWinner(id)
+      .then((response) => {
+        if (response.ok) {
+          return response.json();
+        }
+        throw new Error('id не найден');
+      })
+      .then((winner: Winner) => this.winners.updateWinner(id, winner.wins + 1, time))
+      .catch(() => this.winners.createWinner(id, 1, time))
+      .finally(() => this.broadcast('updateWinners', {}));
   }
 }
 
