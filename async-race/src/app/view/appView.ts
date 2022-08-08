@@ -200,6 +200,43 @@ class AppView {
     this.garagePageNumber.innerText = String(page);
   }
 
+  startCar(carId: number, { velocity, distance }: { velocity: number, distance: number }) {
+    let start: number | null = null;
+    const carItemEl = this.cars.querySelector(`[data-id="${carId}"]`) as HTMLElement;
+    carItemEl.dataset.engine = 'started';
+    const carEl = carItemEl.querySelector('.car') as HTMLElement;
+    const pathEl = carItemEl.querySelector('.car__path') as HTMLElement;
+    const pathWidth: number = pathEl.offsetWidth - carEl.offsetWidth;
+
+    function anim(timestamp: number) {
+      if (carItemEl.dataset.engine === 'stopped') return;
+      if (!start) start = timestamp;
+      const driveTime = distance / velocity;
+      const timePass: number = timestamp - start;
+
+      const progress: number = (pathWidth / driveTime) * timePass;
+      if (carEl) carEl.style.transform = `translateX(${progress > pathWidth ? pathWidth : progress}px)`;
+
+      if (progress < pathWidth && carItemEl.dataset.engine !== 'stopped') {
+        window.requestAnimationFrame(anim);
+      }
+    }
+
+    const rafId: number = window.requestAnimationFrame(anim);
+    return rafId;
+  }
+
+  stopCar(id: number) {
+    const carItem: HTMLElement = this.cars.querySelector(`[data-id="${id}"]`) as HTMLElement;
+    carItem.dataset.engine = 'stopped';
+  }
+
+  resetCar(id: number) {
+    const carEl: HTMLElement = this.cars.querySelector(`[data-id="${id}"] .car`) as HTMLElement;
+    this.stopCar(id);
+    carEl.style.transform = 'translateX(0px)';
+  }
+
   getCarsId(): number[] {
     return Array.prototype.map.call(this.cars.querySelectorAll('.cars__item'), (el) => +el.dataset.id) as number[];
   }

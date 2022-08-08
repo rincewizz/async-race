@@ -37,6 +37,16 @@ class AppPresenter {
       this.view.updateGaragePage(page);
     });
 
+    this.model.subscribe('startEngine', (data: {id: number, data: { velocity: number; distance: number; }}) => {
+      this.view.startCar(data.id, data.data);
+    });
+    this.model.subscribe('stopCarAnimation', (id: number) => {
+      this.view.stopCar(id);
+    });
+    this.model.subscribe('stopEngine', (data: {id: number, data: { velocity: number; distance: number; }}) => {
+      this.view.resetCar(data.id);
+    });
+
     this.view.garageBtn.addEventListener('click', () => {
       this.openGarage();
     });
@@ -69,6 +79,12 @@ class AppPresenter {
           this.model.state.selectedCar = carId;
           this.view.selectForUpdate(carId);
         }
+      }
+      if (target.classList.contains('car__start')) {
+        if (carId) this.model.startEngine(carId).catch(() => new Error('error: engine was broken down'));
+      }
+      if (target.classList.contains('car__stop')) {
+        if (carId) this.model.stopEngine(carId);
       }
     });
 

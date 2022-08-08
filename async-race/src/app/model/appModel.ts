@@ -166,6 +166,35 @@ class AppModel {
       this.createCar(carName, color);
     }
   }
+
+  driveEngine(id: number) {
+    return this.engine.engine(id, 'drive')
+      .then((response) => response.json())
+      .then((data: {success: boolean}) => { this.broadcast('driveEngine', { id, data }); return id; })
+      .catch(() => this.broadcast('stopCarAnimation', id));
+  }
+
+  startEngine(id: number) {
+    return this.engine.engine(id, 'started')
+      .then((response) => response.json())
+      .then((data: {velocity: number, distance: number}) => {
+        this.broadcast('startEngine', { id, data });
+        return new Promise((res, rej) => {
+          this.driveEngine(id).then((val) => {
+            if (typeof val === 'number') {
+              res({ id: val, data });
+            }
+            rej();
+          });
+        });
+      });
+  }
+
+  stopEngine(id: number) {
+    this.engine.engine(id, 'stopped')
+      .then((response) => response.json())
+      .then((data) => this.broadcast('stopEngine', { id, data }));
+  }
 }
 
 export default AppModel;
