@@ -153,6 +153,19 @@ class AppModel {
     this.state.carsCount = count || 0;
     this.broadcast('updateCarsCount', this.state.carsCount);
   }
+
+  generateCars() {
+    for (let i = 0; i < 100; i += 1) {
+      const brandStr: string = this.brand[Math.floor(Math.random() * (this.brand.length - 0)) + 0];
+      const modelStr: string = this.model[Math.floor(Math.random() * (this.model.length - 0)) + 0];
+      const carName: string = `${brandStr} ${modelStr}`;
+      const r: string = `0${Math.floor(Math.random() * (256)).toString(16)}`.slice(-2);
+      const g: string = `0${Math.floor(Math.random() * (256)).toString(16)}`.slice(-2);
+      const b: string = `0${Math.floor(Math.random() * (256)).toString(16)}`.slice(-2);
+      const color: string = `#${r}${g}${b}`;
+      this.createCar(carName, color);
+    }
+  }
 }
 
 export default AppModel;

@@ -53,6 +53,10 @@ class AppPresenter {
       this.model.updateCar(this.model.state.selectedCar, name, color);
     });
 
+    this.view.generateBtn.addEventListener('click', () => {
+      this.model.generateCars();
+    });
+
     this.view.cars.addEventListener('click', (e) => {
       const target: HTMLElement = e.target as HTMLElement;
       const carId = AppView.getCarId(target);
