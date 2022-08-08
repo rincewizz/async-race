@@ -230,9 +230,10 @@ class AppModel {
         return response.json();
       })
       .then((data: Winner[]) => Promise.all(
-        data.map((el) => this.getCarById(el.id).then((val) => Object.assign(el, val))),
+        data.map((el, index) => this.getCarById(el.id)
+          .then((val) => Object.assign(el, val, { index }))),
       ))
-      .then((data) => this.broadcast('winners', data));
+      .then((data) => this.broadcast('winners', { winners: data, page }));
   }
 
   addWinner(id: number, time: number) {

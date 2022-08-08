@@ -16,7 +16,7 @@ class AppPresenter {
     this.model.subscribe('garage', (data: Car[]) => {
       this.view.renderGarage(data);
     });
-    this.model.subscribe('winners', (data: (Winner & Car)[]) => {
+    this.model.subscribe('winners', (data:{ winners: Array<Winner & Car>, page: number}) => {
       this.view.renderWinners(data);
     });
 

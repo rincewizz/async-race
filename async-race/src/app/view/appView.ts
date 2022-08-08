@@ -151,12 +151,13 @@ class AppView {
     });
   }
 
-  renderWinners(winners: Array<Winner & Car>) {
+  renderWinners({ winners, page }: { winners: Array<Winner & Car>, page: number}) {
+    const num = (page - 1) * 10;
     while (this.winnersTbody.firstChild) {
       this.winnersTbody.removeChild(this.winnersTbody.firstChild);
     }
-    winners.forEach((item) => {
-      this.renderWinner(item);
+    winners.forEach((item, index) => {
+      this.renderWinner(item, num + index + 1);
     });
   }
 
@@ -177,14 +178,15 @@ class AppView {
     );
   }
 
-  renderWinner(winner: Winner & Car) {
+  renderWinner(winner: Winner & Car, index: number) {
+    const seconds: string = (winner.time / 1000).toFixed(2);
     this.winnersTbody.insertAdjacentHTML('beforeend', `
     <tr>
-      <td>${winner.id}</td>
-      <td>${winner.color}</td>
+      <td>${index}</td>
+      <td><div class="car winner" style="background-color: ${winner.color}"></div></td>
       <td>${winner.name}</td>
       <td>${winner.wins}</td>
-      <td>${winner.time}</td>
+      <td>${seconds}</td>
     </tr>
     `);
   }
@@ -271,7 +273,8 @@ class AppView {
   }
 
   showWin(name: string, time: number) {
-    this.winCarMessage.innerText = name + time;
+    const seconds: string = (time / 1000).toFixed(2);
+    this.winCarMessage.innerText = `${name} went first [${seconds}s]!`;
     AppView.showEl(this.winCarMessage);
   }
 

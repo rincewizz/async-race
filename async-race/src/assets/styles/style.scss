@@ -20,6 +20,13 @@ html {
     height: 30px;
     mask: url('../img/coupe-car-svgrepo-com.svg') no-repeat;
     -webkit-mask: url('../img/coupe-car-svgrepo-com.svg') no-repeat;
+    mask-size: contain;
+    -webkit-mask-size: contain;
+}
+
+.car.winner{
+    width: 50px;
+    height: 15px;
 }
 
 .cars__item {
