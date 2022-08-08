@@ -8,3 +8,35 @@ html {
     font-size: 1.6rem;
     min-height: 100vh;
 }
+.show {
+    display: block;
+}
+.hide {
+    display: none;
+}
+
+.car {
+    width: 100px;
+    height: 30px;
+    mask: url('../img/coupe-car-svgrepo-com.svg') no-repeat;
+    -webkit-mask: url('../img/coupe-car-svgrepo-com.svg') no-repeat;
+}
+
+.cars__item {
+    margin-top: 20px;
+}
+
+.cars__row {
+    display: flex;
+    align-items: center;
+}
+
+.cars__track{
+    border-bottom: 3px dashed #000;
+}
+
+.car__path {
+    flex: 1 0 auto;
+    filter: drop-shadow(1px 1px 4px #ffffff);
+    -webkit-filter: drop-shadow(1px 1px 4px #ffffff);
+}

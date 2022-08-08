@@ -14,6 +14,10 @@ class AppModel {
 
   public winners: WinnersModel;
 
+  brand: string[];
+
+  model: string[];
+
   constructor() {
     this.listeners = {};
     this.state = {
@@ -23,7 +27,51 @@ class AppModel {
       winnersPage: 0,
       selectedCar: 0,
     };
-
+    this.brand = [
+      'Lexus',
+      'Fiat',
+      'Audi',
+      'Ford',
+      'Skoda',
+      'BMW',
+      'Mazda',
+      'Honda',
+      'Mercedes',
+      'Hyundai',
+      'Tesla',
+      'Mitsubishi',
+      'Toyota',
+      'Nissan',
+      'Volkswagen',
+      'Opel',
+      'Porsche',
+      'Range Rover',
+      'Lamborghini',
+    ];
+    this.model = [
+      'Model 3',
+      'Model S',
+      'Model X',
+      'Model Y',
+      'Corona',
+      'Sienna',
+      'LS',
+      'RC',
+      'Toro',
+      'Cronos',
+      'Q8',
+      'S8',
+      'X7',
+      'Z8',
+      'Sentia',
+      'Xedos 6',
+      'Titan',
+      'Zafira',
+      'Meriva',
+      'Tayron',
+      'Routan',
+      'Phaeton',
+    ];
     this.garage = new GarageModel();
     this.engine = new EngineModel();
     this.winners = new WinnersModel();
@@ -57,6 +105,40 @@ class AppModel {
         return response.json();
       })
       .then((data) => this.broadcast('garage', data));
+  }
+
+  createCar(name: string, color: string) {
+    this.garage.createCar(name, color).then((response) => response.json())
+      .then((data) => {
+        this.setCarsCount(this.state.carsCount + 1);
+        if (Math.ceil(this.state.carsCount / 7) === this.state.garagePage) {
+          this.broadcast('createCar', data);
+        }
+      });
+  }
+
+  updateCar(id: number, name: string, color: string) {
+    this.garage.updateCar(id, name, color)
+      .then((response) => response.json())
+      .then(() => this.broadcast('updateCar', { id, name, color }));
+  }
+
+  deleteCar(id: number) {
+    this.garage.deleteCar(id).then((response) => response.json())
+      .then(() => {
+        this.broadcast('removeCar', id);
+        if (this.getGaragePages() !== this.state.garagePage) {
+          const page = this.state.garagePage * 7;
+          this.garage.getCars(page, 1)
+            .then((response) => {
+              const count: number = Number(response.headers.get('x-total-count'));
+              this.setCarsCount(count);
+              return response.json();
+            })
+            .then((data) => this.broadcast('createCar', data[0]));
+        }
+        this.setCarsCount(this.state.carsCount - 1);
+      });
   }
 
   getGaragePages() {

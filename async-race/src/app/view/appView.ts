@@ -168,6 +168,30 @@ class AppView {
     );
   }
 
+  removeCar(id: number) {
+    this.cars.querySelector(`[data-id="${id}"]`)?.remove();
+  }
+
+  selectForUpdate(id: number) {
+    const carEl: HTMLElement | null = this.cars.querySelector(`[data-id="${id}"]`);
+    if (carEl) {
+      this.editCarColorInput.value = carEl.dataset.color || '';
+      this.editCarNameInput.value = carEl.dataset.name || '';
+    }
+  }
+
+  updateCar(car: Car) {
+    const carsItemEl: HTMLElement | null = this.cars.querySelector(`[data-id="${car.id}"]`);
+    if (carsItemEl) {
+      carsItemEl.dataset.color = car.color;
+      carsItemEl.dataset.name = car.name;
+      const carEl: HTMLElement | null = carsItemEl.querySelector('.car');
+      if (carEl) carEl.style.backgroundColor = car.color;
+      const carName: HTMLElement | null = carsItemEl.querySelector('.car__title');
+      if (carName) carName.innerText = car.name;
+    }
+  }
+
   updateCount(count: number) {
     this.carsCount.innerText = String(count);
   }
@@ -178,6 +202,14 @@ class AppView {
 
   getCarsId(): number[] {
     return Array.prototype.map.call(this.cars.querySelectorAll('.cars__item'), (el) => +el.dataset.id) as number[];
+  }
+
+  static getCarId(el: HTMLElement) {
+    const carItem: HTMLElement | null = el.closest('.cars__item');
+    if (carItem) {
+      return Number(carItem.dataset.id);
+    }
+    return 0;
   }
 
   static showEl(element: HTMLElement) {
