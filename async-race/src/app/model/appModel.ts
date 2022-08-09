@@ -245,9 +245,13 @@ class AppModel {
         }
         throw new Error('id не найден');
       })
-      .then((winner: Winner) => this.winners.updateWinner(id, winner.wins + 1, time))
+      .then((winner: Winner) => {
+        const newTime = winner.time < time ? winner.time : time;
+        return this.winners.updateWinner(id, winner.wins + 1, newTime);
+      })
+      .then(() => this.broadcast('updateWinners', {}))
       .catch(() => this.winners.createWinner(id, 1, time))
-      .finally(() => this.broadcast('updateWinners', {}));
+      .then(() => this.broadcast('createWinners', {}));
   }
 
   deleteWinner(id: number) {
