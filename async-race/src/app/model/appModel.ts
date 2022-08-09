@@ -202,6 +202,7 @@ class AppModel {
 
   startRace(ids: number[]) {
     let time: number = performance.now();
+    this.broadcast('raceStart', {});
     const promises = ids.map((id) => this.startEngine(id));
     Promise.any(promises).then((data) => { time = performance.now() - time; this.broadcast('raceEnd', Object.assign(data as object, { time })); });
   }

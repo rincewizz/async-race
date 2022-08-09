@@ -46,6 +46,16 @@ html {
     flex: 1 0 auto;
     filter: drop-shadow(1px 1px 4px #ffffff);
     -webkit-filter: drop-shadow(1px 1px 4px #ffffff);
+    position: relative;
+}
+.flag {
+    width: 100px;
+    height: 50px;
+    background: url('../img/flag.svg') no-repeat;
+    background-size: contain;
+    position: absolute;
+    right: 50px;
+    bottom: 0;
 }
 
 .win-message{

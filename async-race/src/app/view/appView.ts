@@ -65,7 +65,7 @@ class AppView {
         <input type="text" class="new-car-name"><input type="color" class="new-car-color"><button class="create-car-btn">Create</button>
       </div>
       <div class="update-car">
-        <input type="text" class="edit-car-name"><input type="color" class="edit-car-color"><button class="update-car-btn">Update</button>
+        <input type="text" class="edit-car-name" disabled><input type="color" class="edit-car-color" disabled><button class="update-car-btn" disabled>Update</button>
       </div>
       <div class="">
         <button class="race">RACE</button>
@@ -169,9 +169,10 @@ class AppView {
         <button class="car__select">select</button><button class="car__remove">remove</button><div class="car__title">${car.name}</div>
         </div>
         <div class="cars__row cars__track">
-          <button class="car__start">A</button><button class="car__stop">B</button>
+          <button class="car__start">A</button><button class="car__stop" disabled>B</button>
           <div class="car__path">
             <div class="car" style="background-color: ${car.color}"></div>
+            <div class="flag"></div>
           </div>
         </div>
       </div>`,
