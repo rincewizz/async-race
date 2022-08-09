@@ -92,8 +92,8 @@ class AppView {
             <th>Number</th>
             <th>Car</th>
             <th>Name</th>
-            <th>Wins</th>
-            <th>Best time (seconds)</th>
+            <th class="th-wins">Wins<span class="order-symbol"></span></th>
+            <th class="th-best-time">Best time (seconds)<span class="order-symbol">↓</span</th>
           </tr>
         </thead>
         <tbody class="winners-tbody"></tbody>

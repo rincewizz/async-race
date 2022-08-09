@@ -26,6 +26,8 @@ class AppModel {
       winnersCount: 0,
       winnersPage: 0,
       selectedCar: 0,
+      sort: 'time',
+      sortOrder: 'ASC',
     };
     this.brand = [
       'Lexus',
@@ -220,13 +222,13 @@ class AppModel {
       .then((data) => this.getCarById(id).then((val) => Object.assign(data, val)));
   }
 
-  setWinnersPage(page: number = 1) {
+  setWinnersPage(page: number = 1, sort: 'id' | 'wins' | 'time' = this.state.sort, order: 'ASC' | 'DESC' = this.state.sortOrder) {
     if (page < 1 || (this.state.winnersPage !== 0
       && page > Math.ceil(this.state.winnersCount / 10))) return;
     this.state.winnersPage = page;
     this.broadcast('updateWinnersPage', this.state.winnersPage);
 
-    this.winners.getWinners(page, 10)
+    this.winners.getWinners(page, 10, sort, order)
       .then((response) => {
         const count: number = Number(response.headers.get('x-total-count'));
         this.setWinnersCount(count);

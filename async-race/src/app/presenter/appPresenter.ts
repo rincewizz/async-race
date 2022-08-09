@@ -213,6 +213,28 @@ class AppPresenter {
       }
     });
 
+    this.view.winnersTable.addEventListener('click', (e) => {
+      const target: HTMLElement = e.target as HTMLElement;
+      const th = target.closest('th');
+      const order: 'ASC' | 'DESC' = this.model.state.sortOrder === 'ASC' ? 'DESC' : 'ASC';
+
+      this.view.winnersTable.querySelectorAll('.order-symbol').forEach((el) => el.firstChild?.remove());
+      if (th && th.classList.contains('th-wins')) {
+        this.model.state.sort = 'wins';
+        this.model.state.sortOrder = order;
+        const symbol = th.querySelector('.order-symbol');
+        if (symbol) symbol.innerHTML = order === 'ASC' ? '↓' : '↑';
+        this.model.setWinnersPage(this.model.state.winnersPage, 'wins', order);
+      }
+      if (th && th.classList.contains('th-best-time')) {
+        this.model.state.sort = 'time';
+        this.model.state.sortOrder = order;
+        const symbol = th.querySelector('.order-symbol');
+        if (symbol) symbol.innerHTML = order === 'ASC' ? '↓' : '↑';
+        this.model.setWinnersPage(this.model.state.winnersPage, 'time', order);
+      }
+    });
+
     this.model.setGaragePage(1);
     this.model.setWinnersPage(1);
     this.openGarage();

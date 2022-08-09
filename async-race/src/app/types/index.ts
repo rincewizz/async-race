@@ -4,6 +4,8 @@ export type State = {
   winnersCount: number;
   winnersPage: number;
   selectedCar: number;
+  sort: 'id' | 'time' | 'wins';
+  sortOrder: 'ASC' | 'DESC';
 }
 export type Car = {
   name: string;
