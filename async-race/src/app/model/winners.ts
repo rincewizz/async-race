@@ -32,6 +32,12 @@ class WinnersModel {
       body: JSON.stringify({ wins, time }),
     });
   }
+
+  deleteWinner(id: number) {
+    return fetch(`${this.host}winners/${id}`, {
+      method: 'DELETE',
+    });
+  }
 }
 
 export default WinnersModel;

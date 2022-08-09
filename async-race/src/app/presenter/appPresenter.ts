@@ -52,6 +52,11 @@ class AppPresenter {
 
     this.model.subscribe('removeCar', (id: number) => {
       this.view.removeCar(id);
+      this.model.deleteWinner(id);
+    });
+
+    this.model.subscribe('removeWinner', () => {
+      this.model.setWinnersPage(this.model.state.winnersPage);
     });
 
     this.model.subscribe('updateCarsCount', (count: number) => {

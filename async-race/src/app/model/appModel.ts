@@ -249,6 +249,11 @@ class AppModel {
       .catch(() => this.winners.createWinner(id, 1, time))
       .finally(() => this.broadcast('updateWinners', {}));
   }
+
+  deleteWinner(id: number) {
+    this.winners.deleteWinner(id).then((response) => response.json())
+      .then(() => this.broadcast('removeWinner', id));
+  }
 }
 
 export default AppModel;
