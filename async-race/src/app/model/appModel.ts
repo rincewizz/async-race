@@ -117,6 +117,8 @@ class AppModel {
         this.setCarsCount(this.state.carsCount + 1);
         if (Math.ceil(this.state.carsCount / 7) === this.state.garagePage) {
           this.broadcast('createCar', data);
+        } else {
+          this.broadcast('updatePagination', data);
         }
       });
   }

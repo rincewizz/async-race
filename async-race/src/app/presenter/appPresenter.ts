@@ -42,6 +42,19 @@ class AppPresenter {
       }
     });
 
+    this.model.subscribe('updatePagination', () => {
+      if (this.model.state.garagePage === 1) {
+        this.view.pagePrevBtn.disabled = true;
+      } else {
+        this.view.pagePrevBtn.disabled = false;
+      }
+      if (this.model.state.garagePage === Math.ceil(this.model.state.carsCount / 7)) {
+        this.view.pageNextBtn.disabled = true;
+      } else {
+        this.view.pageNextBtn.disabled = false;
+      }
+    });
+
     this.model.subscribe('createCar', (data: Car) => {
       this.view.renderCar(data);
     });
