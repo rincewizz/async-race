@@ -74,6 +74,7 @@ class AppPresenter {
 
     this.model.subscribe('updateCarsCount', (count: number) => {
       this.view.updateCount(count);
+      this.view.raceBtn.disabled = count < 1;
     });
 
     this.model.subscribe('updateWinnersCount', (count: number) => {

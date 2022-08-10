@@ -146,6 +146,7 @@ class AppModel {
             .then((data) => this.broadcast('createCar', data[0]));
         }
         this.setCarsCount(this.state.carsCount - 1);
+        this.getGaragePages();
       });
   }
 
