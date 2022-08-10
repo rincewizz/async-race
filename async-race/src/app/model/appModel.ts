@@ -147,6 +147,7 @@ class AppModel {
         }
         this.setCarsCount(this.state.carsCount - 1);
         this.getGaragePages();
+        this.broadcast('updatePagination', {});
       });
   }
 

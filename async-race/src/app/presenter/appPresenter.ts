@@ -20,7 +20,7 @@ class AppPresenter {
       } else {
         this.view.pagePrevBtn.disabled = false;
       }
-      if (this.model.state.garagePage === Math.ceil(this.model.state.carsCount / 7)) {
+      if (this.model.state.garagePage >= Math.ceil(this.model.state.carsCount / 7)) {
         this.view.pageNextBtn.disabled = true;
       } else {
         this.view.pageNextBtn.disabled = false;
@@ -48,7 +48,7 @@ class AppPresenter {
       } else {
         this.view.pagePrevBtn.disabled = false;
       }
-      if (this.model.state.garagePage === Math.ceil(this.model.state.carsCount / 7)) {
+      if (this.model.state.garagePage >= Math.ceil(this.model.state.carsCount / 7)) {
         this.view.pageNextBtn.disabled = true;
       } else {
         this.view.pageNextBtn.disabled = false;
@@ -75,10 +75,20 @@ class AppPresenter {
     this.model.subscribe('updateCarsCount', (count: number) => {
       this.view.updateCount(count);
       this.view.raceBtn.disabled = count < 1;
+      if (count < 1) {
+        this.view.pageNextBtn.disabled = true;
+        this.view.pagePrevBtn.disabled = true;
+      }
     });
 
     this.model.subscribe('updateWinnersCount', (count: number) => {
       this.view.updateWinnersCount(count);
+      if (count < 1) {
+        const prevBtn = this.view.winnersPaginations.querySelector('.page-prev-btn') as HTMLButtonElement;
+        const nextBtn = this.view.winnersPaginations.querySelector('.page-next-btn') as HTMLButtonElement;
+        prevBtn.disabled = true;
+        nextBtn.disabled = true;
+      }
     });
 
     this.model.subscribe('updateGaragePage', (page: number) => {

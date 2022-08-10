@@ -79,7 +79,7 @@ class AppView {
       </div>
       <div class="pagination">
         <button class="page-prev-btn">prev</button>
-        <button class="page-next-btn">next</button>
+        <button class="page-next-btn" disabled>next</button>
       </div>
       <div class="win-message hide"></div>
     </div>
@@ -100,7 +100,7 @@ class AppView {
       </table>
       <div class="pagination-winners">
         <button class="page-prev-btn">prev</button>
-        <button class="page-next-btn">next</button>
+        <button class="page-next-btn disabled">next</button>
       </div>
     </div>
     `;
