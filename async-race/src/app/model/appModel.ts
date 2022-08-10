@@ -254,9 +254,8 @@ class AppModel {
         const newTime = winner.time < time ? winner.time : time;
         return this.winners.updateWinner(id, winner.wins + 1, newTime);
       })
-      .then(() => this.broadcast('updateWinners', {}))
       .catch(() => this.winners.createWinner(id, 1, time))
-      .then(() => this.broadcast('createWinners', {}));
+      .then(() => this.broadcast('updateWinners', {}));
   }
 
   deleteWinner(id: number) {

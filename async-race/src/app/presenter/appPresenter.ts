@@ -113,7 +113,8 @@ class AppPresenter {
       }
     });
     this.model.subscribe('updateWinners', () => {
-      this.model.setWinnersPage(this.model.state.winnersPage);
+      this.model.state.winnersPage = 0;
+      this.model.setWinnersPage(this.model.state.winnersPage || 1);
     });
 
     this.model.subscribe('raceStart', () => {
