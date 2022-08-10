@@ -7,12 +7,91 @@ html {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     font-size: 1.6rem;
     min-height: 100vh;
+    padding: 7px 3px;
+}
+
+.garage-btn, .winners-btn {
+    color: #b2b2b2;
+    background-color: #f3f4f6;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px 0 0 10px;
+    cursor: pointer;
+
+    &:disabled{
+        color: #fff;
+        background-color: #527ae2;
+        cursor: not-allowed;
+    }
+}
+.garage-btn {
+    border-radius: 10px 0 0 10px;
+}
+.winners-btn {
+    border-radius: 0px 10px 10px 0px;
 }
 .show {
     display: block;
 }
 .hide {
     display: none;
+}
+
+.create-car, .update-car{
+    display: flex;
+    gap: 5px;
+    margin-top: 10px;
+}
+
+.new-car-name, .edit-car-name {
+    
+    padding: 0.4rem 1rem;
+    font-size: 1.5rem;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    transition: 0.3s;
+
+    &:disabled {
+        background-color: #f6f6f6;
+        cursor: not-allowed;
+    }
+    &:focus {
+        outline: none;
+        box-shadow: 0 0 0 0.2rem #007bff40;
+    }
+}
+.new-car-color, .edit-car-color {
+    background-color: #fff;
+    border: 1px solid #ced4da;
+    border-radius: 0.5rem;
+    height: 32px;
+    cursor: pointer;
+
+    &:disabled {
+        background-color: #f6f6f6;
+        cursor: not-allowed;
+    }
+}
+
+.create-car-btn, .update-car-btn, .race, .reset, .generate {
+    color: #fff;
+    background-color: #0069d9;
+    border: 1px solid #0062cc;
+    border-radius: 7px;
+    padding: 5px 10px;
+    cursor: pointer;
+    &:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+    }
+}
+
+.controls {
+    margin-top: 10px;
 }
 
 .car {
@@ -24,6 +103,38 @@ html {
     -webkit-mask-size: contain;
 }
 
+.car__select, .car__remove {
+    color: #fff;
+    border: 1px solid #117a8b;
+    background-color: #138496;
+    border-radius: 7px;
+    padding: 4px 12px;
+    cursor: pointer;
+}
+
+.car__start, .car__stop {
+    color: #fff;
+    background-color: #218838;
+    border: 1px solid #1e7e34;
+    border-radius: 7px;
+    padding: 4px 10px;
+    cursor: pointer;
+
+    &:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+    }
+}
+
+.car__title {
+    font-weight: 600;
+    color: #1a1a1a;
+}
+.car__remove {
+    background-color: #c82333;
+    border-color: #bd2130;
+}
 .car.winner{
     width: 50px;
     height: 15px;
@@ -36,16 +147,18 @@ html {
 .cars__row {
     display: flex;
     align-items: center;
+    gap: 5px;
 }
 
 .cars__track{
     border-bottom: 3px dashed #000;
+    margin-top: 10px;
 }
 
-.car__path {
+.car__path, .td__car {
     flex: 1 0 auto;
-    filter: drop-shadow(1px 1px 4px #ffffff);
-    -webkit-filter: drop-shadow(1px 1px 4px #ffffff);
+    filter: drop-shadow(0px 0px 3px #000000);
+    -webkit-filter: drop-shadow(0px 0px 3px #000000);
     position: relative;
 }
 .flag {
@@ -70,10 +183,45 @@ html {
     height: 50px;
     font-size: 40px;
     text-align: center;
-    color: #fff;
+    color: #761141;
     text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #e60073, 0 0 40px #e60073, 0 0 50px #e60073, 0 0 60px #e60073, 0 0 70px #e60073;
 }
 
 .th-best-time, .th-wins {
     cursor: pointer;
+}
+
+.pagination, .pagination-winners {
+    margin-top: 20px;
+}
+
+.page-prev-btn, .page-next-btn {
+    color: #fff;
+    background-color: #007bff;
+    border: 1px solid #007bff;
+    border-radius: 7px;
+    padding: 4px 10px;
+    cursor: pointer;
+
+    &:disabled {
+        background-color: #6c757d;
+        border-color: #6c757d;
+        cursor: not-allowed;
+    }
+}
+
+.winners-table {
+    border: 1px solid #dee2e6;
+    border-collapse: collapse;
+    margin-top: 10px;
+
+    & thead {
+        color: #fff;
+        background-color: #212529;
+    }
+    & th, td {
+        border: 1px solid #dee2e6;
+        padding: 0.75rem;
+        vertical-align: top;
+    }
 }

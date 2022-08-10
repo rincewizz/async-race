@@ -67,7 +67,7 @@ class AppView {
       <div class="update-car">
         <input type="text" class="edit-car-name" disabled><input type="color" class="edit-car-color" disabled><button class="update-car-btn" disabled>Update</button>
       </div>
-      <div class="">
+      <div class="controls">
         <button class="race">RACE</button>
         <button class="reset">RESET</button>
         <button class="generate">GENERATE</button>
@@ -184,7 +184,7 @@ class AppView {
     this.winnersTbody.insertAdjacentHTML('beforeend', `
     <tr>
       <td>${index}</td>
-      <td><div class="car winner" style="background-color: ${winner.color}"></div></td>
+      <td class="td__car"><div class="car winner" style="background-color: ${winner.color}"></div></td>
       <td>${winner.name}</td>
       <td>${winner.wins}</td>
       <td>${seconds}</td>
