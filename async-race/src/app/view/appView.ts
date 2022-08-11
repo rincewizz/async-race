@@ -50,15 +50,46 @@ class AppView {
   winnersCount: HTMLElement;
 
   constructor() {
-    this.garageBtn = document.createElement('button');
-    this.garageBtn.innerText = 'Garage';
-    this.garageBtn.classList.add('garage-btn');
+    AppView.renderApp();
 
-    this.winnersBtn = document.createElement('button');
-    this.winnersBtn.innerText = 'Winners';
-    this.winnersBtn.classList.add('winners-btn');
+    this.garageBtn = document.querySelector('.garage-btn') as HTMLButtonElement;
+    this.winnersBtn = document.querySelector('.winners-btn') as HTMLButtonElement;
 
-    document.body.innerHTML = `<div class="view-btns"></div>
+    this.garage = document.querySelector('.garage') as HTMLElement;
+    this.winners = document.querySelector('.winners') as HTMLElement;
+
+    this.cars = document.querySelector('.cars') as HTMLElement;
+    this.createCarBtn = document.querySelector('.create-car-btn') as HTMLButtonElement;
+    this.newCarNameInput = document.querySelector('.new-car-name') as HTMLInputElement;
+    this.newCarColorInput = document.querySelector('.new-car-color') as HTMLInputElement;
+
+    this.updateCarBtn = document.querySelector('.update-car-btn') as HTMLButtonElement;
+    this.editCarNameInput = document.querySelector('.edit-car-name') as HTMLInputElement;
+    this.editCarColorInput = document.querySelector('.edit-car-color') as HTMLInputElement;
+
+    this.raceBtn = document.querySelector('.race') as HTMLButtonElement;
+    this.resetBtn = document.querySelector('.reset') as HTMLButtonElement;
+    this.generateBtn = document.querySelector('.generate') as HTMLButtonElement;
+
+    this.carsCount = document.querySelector('.cars-count') as HTMLElement;
+    this.garagePageNumber = document.querySelector('.page-number') as HTMLElement;
+
+    this.pagePrevBtn = document.querySelector('.page-prev-btn') as HTMLButtonElement;
+    this.pageNextBtn = document.querySelector('.page-next-btn') as HTMLButtonElement;
+
+    this.winCarMessage = document.querySelector('.win-message') as HTMLElement;
+    this.winnersTable = document.querySelector('.winners-table') as HTMLTableElement;
+    this.winnersTbody = document.querySelector('.winners-tbody') as HTMLTableSectionElement;
+
+    this.winnersPaginations = document.querySelector('.pagination-winners') as HTMLElement;
+
+    this.winnersPageNumber = document.querySelector('.page-winners-number') as HTMLElement;
+    this.winnersCount = document.querySelector('.winners-count') as HTMLElement;
+  }
+
+  static renderApp() {
+    document.body.innerHTML = `
+    <div class="view-btns"><button class="garage-btn">Garage<button class="winners-btn">Winners</div>
     <div class="garage">
 
       <div class="create-car">
@@ -104,47 +135,9 @@ class AppView {
       </div>
     </div>
     `;
-    const viewBtns: HTMLElement | null = document.querySelector('.view-btns');
-    if (viewBtns) {
-      viewBtns.append(this.garageBtn);
-      viewBtns.append(this.winnersBtn);
-    }
-
-    this.garage = document.querySelector('.garage') as HTMLElement;
-
-    this.winners = document.querySelector('.winners') as HTMLElement;
-
-    this.cars = document.querySelector('.cars') as HTMLElement;
-
-    this.createCarBtn = document.querySelector('.create-car-btn') as HTMLButtonElement;
-    this.newCarNameInput = document.querySelector('.new-car-name') as HTMLInputElement;
-    this.newCarColorInput = document.querySelector('.new-car-color') as HTMLInputElement;
-
-    this.updateCarBtn = document.querySelector('.update-car-btn') as HTMLButtonElement;
-    this.editCarNameInput = document.querySelector('.edit-car-name') as HTMLInputElement;
-    this.editCarColorInput = document.querySelector('.edit-car-color') as HTMLInputElement;
-
-    this.raceBtn = document.querySelector('.race') as HTMLButtonElement;
-    this.resetBtn = document.querySelector('.reset') as HTMLButtonElement;
-    this.generateBtn = document.querySelector('.generate') as HTMLButtonElement;
-
-    this.carsCount = document.querySelector('.cars-count') as HTMLElement;
-    this.garagePageNumber = document.querySelector('.page-number') as HTMLElement;
-
-    this.pagePrevBtn = document.querySelector('.page-prev-btn') as HTMLButtonElement;
-    this.pageNextBtn = document.querySelector('.page-next-btn') as HTMLButtonElement;
-
-    this.winCarMessage = document.querySelector('.win-message') as HTMLElement;
-    this.winnersTable = document.querySelector('.winners-table') as HTMLTableElement;
-    this.winnersTbody = document.querySelector('.winners-tbody') as HTMLTableSectionElement;
-
-    this.winnersPaginations = document.querySelector('.pagination-winners') as HTMLElement;
-
-    this.winnersPageNumber = document.querySelector('.page-winners-number') as HTMLElement;
-    this.winnersCount = document.querySelector('.winners-count') as HTMLElement;
   }
 
-  renderGarage(cars: Array<Car>) {
+  renderCars(cars: Array<Car>) {
     this.cars.innerHTML = '';
     cars.forEach((item) => {
       this.renderCar(item);
@@ -196,11 +189,27 @@ class AppView {
     this.cars.querySelector(`[data-id="${id}"]`)?.remove();
   }
 
+  enableUpdateCarInputs() {
+    this.editCarColorInput.disabled = false;
+    this.editCarNameInput.disabled = false;
+    this.updateCarBtn.disabled = false;
+  }
+
+  disableUpdateCarInputs() {
+    this.editCarColorInput.value = '#000000';
+    this.editCarNameInput.value = '';
+    this.editCarColorInput.disabled = true;
+    this.editCarNameInput.disabled = true;
+    this.updateCarBtn.disabled = true;
+  }
+
   selectForUpdate(id: number) {
     const carEl: HTMLElement | null = this.cars.querySelector(`[data-id="${id}"]`);
     if (carEl) {
       this.editCarColorInput.value = carEl.dataset.color || '';
       this.editCarNameInput.value = carEl.dataset.name || '';
+
+      this.enableUpdateCarInputs();
     }
   }
 
@@ -214,6 +223,7 @@ class AppView {
       const carName: HTMLElement | null = carsItemEl.querySelector('.car__title');
       if (carName) carName.innerText = car.name;
     }
+    this.enableUpdateCarInputs();
   }
 
   updateCount(count: number) {
@@ -254,6 +264,7 @@ class AppView {
       }
     }
 
+    this.setEngineStatus(carId, 'start');
     const rafId: number = window.requestAnimationFrame(anim);
     return rafId;
   }
@@ -263,10 +274,26 @@ class AppView {
     carItem.dataset.engine = 'stopped';
   }
 
+  setEngineStatus(id: number, status: 'start' | 'stop') {
+    const carsItemEl: HTMLElement | null = this.cars.querySelector(`[data-id="${id}"]`);
+    if (carsItemEl) {
+      const startBtn: HTMLButtonElement = carsItemEl.querySelector('.car__start') as HTMLButtonElement;
+      const stopBtn: HTMLButtonElement = carsItemEl.querySelector('.car__stop') as HTMLButtonElement;
+      if (status === 'start') {
+        startBtn.disabled = true;
+        stopBtn.disabled = false;
+      } else {
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+      }
+    }
+  }
+
   resetCar(id: number) {
     const carEl: HTMLElement = this.cars.querySelector(`[data-id="${id}"] .car`) as HTMLElement;
     this.stopCar(id);
     carEl.style.transform = 'translateX(0px)';
+    this.setEngineStatus(id, 'stop');
   }
 
   getCarsId(): number[] {

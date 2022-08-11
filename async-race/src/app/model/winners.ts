@@ -1,3 +1,5 @@
+import { Sort, SortOrder } from '../types';
+
 class WinnersModel {
   private host: string;
 
@@ -5,7 +7,7 @@ class WinnersModel {
     this.host = 'http://127.0.0.1:3000/';
   }
 
-  getWinners(page: number, limit: number, sort: 'id'|'wins'|'time' = 'time', order: 'ASC'|'DESC' = 'ASC') {
+  getWinners(page: number, limit: number, sort: Sort = 'time', order: SortOrder = 'ASC') {
     return fetch(`${this.host}winners?_page=${page}&_limit=${limit}&_sort=${sort}&_order=${order}`);
   }
 

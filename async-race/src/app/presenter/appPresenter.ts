@@ -1,5 +1,7 @@
 import AppModel from '../model/appModel';
-import { Car, Winner } from '../types';
+import {
+  Car, EngineResponse, Pagination, Sort, SortOrder, Winner,
+} from '../types';
 import AppView from '../view/appView';
 
 class AppPresenter {
@@ -13,48 +15,39 @@ class AppPresenter {
   }
 
   init() {
-    this.model.subscribe('garage', (data: Car[]) => {
-      this.view.renderGarage(data);
-      if (this.model.state.garagePage === 1) {
-        this.view.pagePrevBtn.disabled = true;
-      } else {
-        this.view.pagePrevBtn.disabled = false;
-      }
-      if (this.model.state.garagePage >= Math.ceil(this.model.state.carsCount / 7)) {
-        this.view.pageNextBtn.disabled = true;
-      } else {
-        this.view.pageNextBtn.disabled = false;
-      }
-    });
-    this.model.subscribe('winners', (data:{ winners: Array<Winner & Car>, page: number}) => {
-      this.view.renderWinners(data);
-      const prevBtn: HTMLButtonElement = this.view.winnersPaginations.querySelector('.page-prev-btn') as HTMLButtonElement;
-      const nextBtn: HTMLButtonElement = this.view.winnersPaginations.querySelector('.page-next-btn') as HTMLButtonElement;
-      if (this.model.state.winnersPage === 1) {
-        prevBtn.disabled = true;
-      } else {
-        prevBtn.disabled = false;
-      }
-      if (this.model.state.winnersPage === Math.ceil(this.model.state.winnersCount / 10)) {
-        nextBtn.disabled = true;
-      } else {
-        nextBtn.disabled = false;
-      }
+    this.initGarageSubscribers();
+    this.initCarsSubscribers();
+    this.initWinnersSubscribers();
+
+    this.initGarageEvents();
+    this.initWinnersEvents();
+
+    this.model.setGaragePage(1);
+    this.model.setWinnersPage(1);
+    this.openGarage();
+  }
+
+  initGarageSubscribers() {
+    this.model.subscribe('loadGaragePage', (data: Car[]) => {
+      this.view.renderCars(data);
     });
 
-    this.model.subscribe('updatePagination', () => {
-      if (this.model.state.garagePage === 1) {
-        this.view.pagePrevBtn.disabled = true;
-      } else {
-        this.view.pagePrevBtn.disabled = false;
-      }
-      if (this.model.state.garagePage >= Math.ceil(this.model.state.carsCount / 7)) {
-        this.view.pageNextBtn.disabled = true;
-      } else {
-        this.view.pageNextBtn.disabled = false;
-      }
+    this.model.subscribe('updateGaragePagination', (pagination: Pagination) => {
+      this.view.pagePrevBtn.disabled = pagination.prev;
+      this.view.pageNextBtn.disabled = pagination.next;
     });
 
+    this.model.subscribe('updateCarsCount', (count: number) => {
+      this.view.updateCount(count);
+      this.view.raceBtn.disabled = count < 1;
+    });
+
+    this.model.subscribe('updateGaragePage', (page: number) => {
+      this.view.updateGaragePage(page);
+    });
+  }
+
+  initCarsSubscribers() {
     this.model.subscribe('createCar', (data: Car) => {
       this.view.renderCar(data);
     });
@@ -67,64 +60,14 @@ class AppPresenter {
       this.view.removeCar(id);
       this.model.deleteWinner(id);
     });
-
-    this.model.subscribe('removeWinner', () => {
-      this.model.setWinnersPage(this.model.state.winnersPage);
-    });
-
-    this.model.subscribe('updateCarsCount', (count: number) => {
-      this.view.updateCount(count);
-      this.view.raceBtn.disabled = count < 1;
-      if (count < 1) {
-        this.view.pageNextBtn.disabled = true;
-        this.view.pagePrevBtn.disabled = true;
-      }
-    });
-
-    this.model.subscribe('updateWinnersCount', (count: number) => {
-      this.view.updateWinnersCount(count);
-      if (count < 1) {
-        const prevBtn = this.view.winnersPaginations.querySelector('.page-prev-btn') as HTMLButtonElement;
-        const nextBtn = this.view.winnersPaginations.querySelector('.page-next-btn') as HTMLButtonElement;
-        prevBtn.disabled = true;
-        nextBtn.disabled = true;
-      }
-    });
-
-    this.model.subscribe('updateGaragePage', (page: number) => {
-      this.view.updateGaragePage(page);
-    });
-
-    this.model.subscribe('updateWinnersPage', (page: number) => {
-      this.view.updateWinnersPage(page);
-    });
-
-    this.model.subscribe('startEngine', (data: {id: number, data: { velocity: number; distance: number; }}) => {
-      this.view.startCar(data.id, data.data);
-      const carsItemEl: HTMLElement | null = this.view.cars.querySelector(`[data-id="${data.id}"]`);
-      if (carsItemEl) {
-        const startBtn: HTMLButtonElement = carsItemEl.querySelector('.car__start') as HTMLButtonElement;
-        const stopBtn: HTMLButtonElement = carsItemEl.querySelector('.car__stop') as HTMLButtonElement;
-        startBtn.disabled = true;
-        stopBtn.disabled = false;
-      }
+    this.model.subscribe('startEngine', (data: {id: number, engine: EngineResponse}) => {
+      this.view.startCar(data.id, data.engine);
     });
     this.model.subscribe('stopCarAnimation', (id: number) => {
       this.view.stopCar(id);
     });
     this.model.subscribe('stopEngine', (data: {id: number, data: { velocity: number; distance: number; }}) => {
       this.view.resetCar(data.id);
-      const carsItemEl: HTMLElement | null = this.view.cars.querySelector(`[data-id="${data.id}"]`);
-      if (carsItemEl) {
-        const startBtn: HTMLButtonElement = carsItemEl.querySelector('.car__start') as HTMLButtonElement;
-        const stopBtn: HTMLButtonElement = carsItemEl.querySelector('.car__stop') as HTMLButtonElement;
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
-      }
-    });
-    this.model.subscribe('updateWinners', () => {
-      this.model.state.winnersPage = 0;
-      this.model.setWinnersPage(this.model.state.winnersPage || 1);
     });
 
     this.model.subscribe('raceStart', () => {
@@ -139,7 +82,40 @@ class AppPresenter {
         this.view.resetBtn.disabled = false;
       });
     });
+  }
 
+  initWinnersSubscribers() {
+    this.model.subscribe('loadWinnersPage', (data:{ winners: Array<Winner & Car>, page: number}) => {
+      this.view.renderWinners(data);
+    });
+
+    this.model.subscribe('updateWinnersPagination', (pagination: Pagination) => {
+      const prevBtn: HTMLButtonElement = this.view.winnersPaginations.querySelector('.page-prev-btn') as HTMLButtonElement;
+      const nextBtn: HTMLButtonElement = this.view.winnersPaginations.querySelector('.page-next-btn') as HTMLButtonElement;
+
+      prevBtn.disabled = pagination.prev;
+      nextBtn.disabled = pagination.next;
+    });
+
+    this.model.subscribe('removeWinner', () => {
+      this.model.setWinnersPage(this.model.state.winnersPage);
+    });
+
+    this.model.subscribe('updateWinnersCount', (count: number) => {
+      this.view.updateWinnersCount(count);
+    });
+
+    this.model.subscribe('updateWinnersPage', (page: number) => {
+      this.view.updateWinnersPage(page);
+    });
+
+    this.model.subscribe('updateWinners', () => {
+      this.model.state.winnersPage = 0;
+      this.model.setWinnersPage(this.model.state.winnersPage || 1);
+    });
+  }
+
+  initGarageEvents() {
     this.view.garageBtn.addEventListener('click', () => {
       this.openGarage();
     });
@@ -160,11 +136,6 @@ class AppPresenter {
       const name: string = this.view.editCarNameInput.value;
       const color: string = this.view.editCarColorInput.value;
       this.model.updateCar(this.model.state.selectedCar, name, color);
-      this.view.editCarColorInput.value = '';
-      this.view.editCarNameInput.value = '';
-      this.view.editCarColorInput.disabled = true;
-      this.view.editCarNameInput.disabled = true;
-      this.view.updateCarBtn.disabled = true;
     });
 
     this.view.generateBtn.addEventListener('click', () => {
@@ -174,24 +145,20 @@ class AppPresenter {
     this.view.cars.addEventListener('click', (e) => {
       const target: HTMLElement = e.target as HTMLElement;
       const carId = AppView.getCarId(target);
+      if (!carId) return;
 
       if (target.classList.contains('car__remove')) {
-        if (carId) this.model.deleteCar(carId);
+        this.model.deleteCar(carId);
       }
       if (target.classList.contains('car__select')) {
-        if (carId) {
-          this.model.state.selectedCar = carId;
-          this.view.selectForUpdate(carId);
-          this.view.editCarColorInput.disabled = false;
-          this.view.editCarNameInput.disabled = false;
-          this.view.updateCarBtn.disabled = false;
-        }
+        this.model.state.selectedCar = carId;
+        this.view.selectForUpdate(carId);
       }
       if (target.classList.contains('car__start')) {
-        if (carId) this.model.startEngine(carId).catch(() => new Error('error: engine was broken down'));
+        this.model.startEngine(carId).catch(() => new Error('error: engine was broken down'));
       }
       if (target.classList.contains('car__stop')) {
-        if (carId) this.model.stopEngine(carId);
+        this.model.stopEngine(carId);
       }
     });
 
@@ -214,7 +181,9 @@ class AppPresenter {
       ids.forEach((id) => this.model.stopEngine(id));
       this.view.raceBtn.disabled = false;
     });
+  }
 
+  initWinnersEvents() {
     this.view.winnersPaginations.addEventListener('click', (e) => {
       const target: HTMLElement = e.target as HTMLElement;
       if (target.classList.contains('page-prev-btn')) {
@@ -228,28 +197,23 @@ class AppPresenter {
     this.view.winnersTable.addEventListener('click', (e) => {
       const target: HTMLElement = e.target as HTMLElement;
       const th = target.closest('th');
-      const order: 'ASC' | 'DESC' = this.model.state.sortOrder === 'ASC' ? 'DESC' : 'ASC';
+      if (!th) return;
 
-      this.view.winnersTable.querySelectorAll('.order-symbol').forEach((el) => el.firstChild?.remove());
-      if (th && th.classList.contains('th-wins')) {
-        this.model.state.sort = 'wins';
+      const order: SortOrder = this.model.state.sortOrder === 'ASC' ? 'DESC' : 'ASC';
+
+      let newSort: Sort | null = null;
+      if (th.classList.contains('th-wins')) newSort = 'wins';
+      if (th.classList.contains('th-best-time')) newSort = 'time';
+
+      if (newSort) {
+        this.view.winnersTable.querySelectorAll('.order-symbol').forEach((el) => el.firstChild?.remove());
+        this.model.state.sort = newSort;
         this.model.state.sortOrder = order;
         const symbol = th.querySelector('.order-symbol');
         if (symbol) symbol.innerHTML = order === 'ASC' ? '↓' : '↑';
-        this.model.setWinnersPage(this.model.state.winnersPage, 'wins', order);
-      }
-      if (th && th.classList.contains('th-best-time')) {
-        this.model.state.sort = 'time';
-        this.model.state.sortOrder = order;
-        const symbol = th.querySelector('.order-symbol');
-        if (symbol) symbol.innerHTML = order === 'ASC' ? '↓' : '↑';
-        this.model.setWinnersPage(this.model.state.winnersPage, 'time', order);
+        this.model.setWinnersPage(this.model.state.winnersPage, newSort, order);
       }
     });
-
-    this.model.setGaragePage(1);
-    this.model.setWinnersPage(1);
-    this.openGarage();
   }
 
   openGarage() {

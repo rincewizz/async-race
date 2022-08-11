@@ -1,10 +1,59 @@
-import { Car, State, Winner } from '../types';
+import {
+  Car, EngineResponse, Listeners, Pagination, Sort, SortOrder, State, Winner,
+} from '../types';
 import EngineModel from './engine';
 import GarageModel from './garage';
 import WinnersModel from './winners';
 
+const CAR_BRANDS = [
+  'Lexus',
+  'Fiat',
+  'Audi',
+  'Ford',
+  'Skoda',
+  'BMW',
+  'Mazda',
+  'Honda',
+  'Mercedes',
+  'Hyundai',
+  'Tesla',
+  'Mitsubishi',
+  'Toyota',
+  'Nissan',
+  'Volkswagen',
+  'Opel',
+  'Porsche',
+  'Range Rover',
+  'Lamborghini',
+];
+
+const CAR_MODEL = [
+  'Model 3',
+  'Model S',
+  'Model X',
+  'Model Y',
+  'Corona',
+  'Sienna',
+  'LS',
+  'RC',
+  'Toro',
+  'Cronos',
+  'Q8',
+  'S8',
+  'X7',
+  'Z8',
+  'Sentia',
+  'Xedos 6',
+  'Titan',
+  'Zafira',
+  'Meriva',
+  'Tayron',
+  'Routan',
+  'Phaeton',
+];
+
 class AppModel {
-  public listeners: { [index: string]: Array<Function> };
+  public listeners: Listeners;
 
   public state: State;
 
@@ -23,57 +72,16 @@ class AppModel {
     this.state = {
       carsCount: 0,
       garagePage: 0,
+      carsPerPage: 7,
       winnersCount: 0,
       winnersPage: 0,
+      winnersPerPage: 10,
       selectedCar: 0,
       sort: 'time',
       sortOrder: 'ASC',
     };
-    this.brand = [
-      'Lexus',
-      'Fiat',
-      'Audi',
-      'Ford',
-      'Skoda',
-      'BMW',
-      'Mazda',
-      'Honda',
-      'Mercedes',
-      'Hyundai',
-      'Tesla',
-      'Mitsubishi',
-      'Toyota',
-      'Nissan',
-      'Volkswagen',
-      'Opel',
-      'Porsche',
-      'Range Rover',
-      'Lamborghini',
-    ];
-    this.model = [
-      'Model 3',
-      'Model S',
-      'Model X',
-      'Model Y',
-      'Corona',
-      'Sienna',
-      'LS',
-      'RC',
-      'Toro',
-      'Cronos',
-      'Q8',
-      'S8',
-      'X7',
-      'Z8',
-      'Sentia',
-      'Xedos 6',
-      'Titan',
-      'Zafira',
-      'Meriva',
-      'Tayron',
-      'Routan',
-      'Phaeton',
-    ];
+    this.brand = CAR_BRANDS;
+    this.model = CAR_MODEL;
     this.garage = new GarageModel();
     this.engine = new EngineModel();
     this.winners = new WinnersModel();
@@ -94,19 +102,24 @@ class AppModel {
     if (this.listeners[name]) this.listeners[name].forEach((listener) => listener(data));
   }
 
-  setGaragePage(page: number = 1) {
-    if (page < 1 || (this.state.garagePage !== 0
-      && page > Math.ceil(this.state.carsCount / 7))) return;
-    this.state.garagePage = page;
-    this.broadcast('updateGaragePage', this.state.garagePage);
-
-    this.garage.getCars(page)
+  getCarsByPage(page: number) {
+    return this.garage.getCars(page)
       .then((response) => {
         const count: number = Number(response.headers.get('x-total-count'));
         this.setCarsCount(count);
         return response.json();
-      })
-      .then((data) => this.broadcast('garage', data));
+      });
+  }
+
+  setGaragePage(page: number = 1) {
+    if (page < 1 || (this.state.garagePage !== 0
+      && page > this.getGaragePages())) return;
+    this.state.garagePage = page;
+    this.broadcast('updateGaragePage', this.state.garagePage);
+
+    this.getCarsByPage(page)
+      .then((data) => this.broadcast('loadGaragePage', data))
+      .then(() => this.broadcast('updateGaragePagination', this.getGaragePagination()));
   }
 
   getCarById(id: number): Promise<Car> {
@@ -114,15 +127,27 @@ class AppModel {
   }
 
   createCar(name: string, color: string) {
-    this.garage.createCar(name, color).then((response) => response.json())
+    this.garage.createCar(name, color)
+      .then((response) => response.json())
       .then((data) => {
         this.setCarsCount(this.state.carsCount + 1);
-        if (Math.ceil(this.state.carsCount / 7) === this.state.garagePage) {
+        if (this.getGaragePages() === this.state.garagePage) {
           this.broadcast('createCar', data);
         } else {
-          this.broadcast('updatePagination', data);
+          this.broadcast('updateGaragePagination', this.getGaragePagination());
         }
       });
+  }
+
+  getGaragePagination(): Pagination {
+    const pagination = { prev: true, next: true };
+    if (this.state.garagePage !== 1) {
+      pagination.prev = false;
+    }
+    if (this.state.garagePage < this.getGaragePages()) {
+      pagination.next = false;
+    }
+    return pagination;
   }
 
   updateCar(id: number, name: string, color: string) {
@@ -134,9 +159,13 @@ class AppModel {
   deleteCar(id: number) {
     this.garage.deleteCar(id).then((response) => response.json())
       .then(() => {
+        const oldLastPage: number = this.getGaragePages();
         this.broadcast('removeCar', id);
-        if (this.getGaragePages() !== this.state.garagePage) {
-          const page = this.state.garagePage * 7;
+        this.setCarsCount(this.state.carsCount - 1);
+        const lastPage: number = this.getGaragePages();
+
+        if (oldLastPage > this.state.garagePage) {
+          const page = this.state.garagePage * this.state.carsPerPage;
           this.garage.getCars(page, 1)
             .then((response) => {
               const count: number = Number(response.headers.get('x-total-count'));
@@ -145,18 +174,17 @@ class AppModel {
             })
             .then((data) => this.broadcast('createCar', data[0]));
         }
-        this.setCarsCount(this.state.carsCount - 1);
-        this.getGaragePages();
-        this.broadcast('updatePagination', {});
+        if (lastPage < this.state.garagePage) {
+          this.setGaragePage(lastPage);
+        }
+
+        this.broadcast('updateGaragePagination', this.getGaragePagination());
       });
   }
 
-  getGaragePages() {
-    const pages: number = Math.ceil(this.state.carsCount / 7);
-    if (pages < this.state.garagePage) {
-      this.setGaragePage(pages);
-    }
-    return pages;
+  getGaragePages(): number {
+    const lastPage: number = Math.ceil(this.state.carsCount / this.state.carsPerPage);
+    return lastPage;
   }
 
   setCarsCount(count: number) {
@@ -187,12 +215,12 @@ class AppModel {
   startEngine(id: number) {
     return this.engine.engine(id, 'started')
       .then((response) => response.json())
-      .then((data: {velocity: number, distance: number}) => {
-        this.broadcast('startEngine', { id, data });
+      .then((engine: EngineResponse) => {
+        this.broadcast('startEngine', { id, engine });
         return new Promise((res, rej) => {
           this.driveEngine(id).then((val) => {
             if (typeof val === 'number') {
-              res({ id: val, data });
+              res({ id: val, engine });
             }
             rej();
           });
@@ -207,6 +235,7 @@ class AppModel {
   }
 
   startRace(ids: number[]) {
+    if (!this.state.carsCount) return;
     let time: number = performance.now();
     this.broadcast('raceStart', {});
     const promises = ids.map((id) => this.startEngine(id));
@@ -218,19 +247,12 @@ class AppModel {
     this.broadcast('updateWinnersCount', this.state.winnersCount);
   }
 
-  getFullWinner(id: number) {
-    return this.winners.getWinner(id)
-      .then((response) => response.json())
-      .then((data) => this.getCarById(id).then((val) => Object.assign(data, val)));
-  }
-
-  setWinnersPage(page: number = 1, sort: 'id' | 'wins' | 'time' = this.state.sort, order: 'ASC' | 'DESC' = this.state.sortOrder) {
-    if (page < 1 || (this.state.winnersPage !== 0
-      && page > Math.ceil(this.state.winnersCount / 10))) return;
-    this.state.winnersPage = page;
-    this.broadcast('updateWinnersPage', this.state.winnersPage);
-
-    this.winners.getWinners(page, 10, sort, order)
+  getWinnersByPage(
+    page: number = 1,
+    sort: Sort = this.state.sort,
+    order: SortOrder = this.state.sortOrder,
+  ) {
+    return this.winners.getWinners(page, this.state.winnersPerPage, sort, order)
       .then((response) => {
         const count: number = Number(response.headers.get('x-total-count'));
         this.setWinnersCount(count);
@@ -239,8 +261,38 @@ class AppModel {
       .then((data: Winner[]) => Promise.all(
         data.map((el, index) => this.getCarById(el.id)
           .then((val) => Object.assign(el, val, { index }))),
-      ))
-      .then((data) => this.broadcast('winners', { winners: data, page }));
+      ));
+  }
+
+  getWinnersPagination(): Pagination {
+    const pagination = { prev: true, next: true };
+    if (this.state.winnersPage !== 1) {
+      pagination.prev = false;
+    }
+    if (this.state.winnersPage < this.getWinnersPages()) {
+      pagination.next = false;
+    }
+    return pagination;
+  }
+
+  setWinnersPage(
+    page: number = 1,
+    sort: Sort = this.state.sort,
+    order: SortOrder = this.state.sortOrder,
+  ) {
+    if (page < 1 || (this.state.winnersPage !== 0
+      && page > this.getWinnersPages())) return;
+    this.state.winnersPage = page;
+    this.broadcast('updateWinnersPage', this.state.winnersPage);
+
+    this.getWinnersByPage(page, sort, order)
+      .then((data) => this.broadcast('loadWinnersPage', { winners: data, page }))
+      .then(() => this.broadcast('updateWinnersPagination', this.getWinnersPagination()));
+  }
+
+  getWinnersPages(): number {
+    const lastPage: number = Math.ceil(this.state.winnersCount / this.state.winnersPerPage);
+    return lastPage;
   }
 
   addWinner(id: number, time: number) {
