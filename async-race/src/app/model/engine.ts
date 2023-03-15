@@ -1,8 +1,10 @@
+import { HOST } from '../constants';
+
 class EngineModel {
   private host: string;
 
   constructor() {
-    this.host = 'http://127.0.0.1:3000/';
+    this.host = HOST;
   }
 
   engine(id: number, status: 'started'|'stopped'|'drive') {

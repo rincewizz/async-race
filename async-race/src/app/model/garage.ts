@@ -1,8 +1,10 @@
+import { HOST } from '../constants';
+
 class GarageModel {
   private host: string;
 
   constructor() {
-    this.host = 'http://127.0.0.1:3000/';
+    this.host = HOST;
   }
 
   getCars(page: number, limit: number = 7) {

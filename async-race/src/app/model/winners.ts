@@ -1,10 +1,11 @@
+import { HOST } from '../constants';
 import { Sort, SortOrder } from '../types';
 
 class WinnersModel {
   private host: string;
 
   constructor() {
-    this.host = 'http://127.0.0.1:3000/';
+    this.host = HOST;
   }
 
   getWinners(page: number, limit: number, sort: Sort = 'time', order: SortOrder = 'ASC') {
